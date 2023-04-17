@@ -1,11 +1,12 @@
 require('dotenv').config()
 const { nanoid } = require('nanoid')
 const validUrl = require('valid-url')
+const useragent = require('express-useragent')
 const { dataStore, addToDataStore } = require('../data/dataStore')
 
 
 // encode a url
-const encode = async (req, res) => {
+const encode = (req, res) => {
     const { origUrl } = req.body;
     const baseUrl = process.env.BASE_URL;
     const urlId = nanoid();
@@ -21,12 +22,17 @@ const encode = async (req, res) => {
                 urlObject = {
                     origUrl,
                     shortUrl,
+                    numberOfVisits: 0,
                     createdAt: new Date(),
                 };
                 // add to db
                 addToDataStore(urlId, urlObject);
 
-                res.status(200).json(urlObject)
+                res.status(200).json({
+                    origUrl,
+                    shortUrl,
+                    createdAt: new Date(),
+                })
             }
         } catch (error) {
             console.log(err);
@@ -42,7 +48,10 @@ const decode = (req, res) => {
     try {
         const url = dataStore[req.params.urlId];
         if (url) {
-            return res.status(200).json(url.origUrl);
+            url.numberOfVisits += 1;
+            return res.status(200).json({
+                "original-url": url.origUrl
+            });
         } else res.status(404).json('Not found');
     } catch (err) {
         console.log(err);
@@ -50,4 +59,23 @@ const decode = (req, res) => {
     }
 }
 
-module.exports = { encode, decode }
+const getStatistic = (req, res) => {
+    try {
+        const url = dataStore[req.params.url_path];
+        const ua = useragent.parse(req.headers['user-agent'])
+        if (url) {
+            return res.status(200).json({
+                "user-agent": ua.browser,
+                "version": ua.version,
+                "os": ua.os,
+                "platform": ua.platform,
+                "number of visits": url.numberOfVisits
+            });
+        } else res.status(404).json('Not found');
+    } catch (err) {
+        console.log(err);
+        res.status(500).json('Server Error');
+    }
+}
+
+module.exports = { encode, decode, getStatistic }

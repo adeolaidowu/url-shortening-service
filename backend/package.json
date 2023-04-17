@@ -13,6 +13,7 @@
   "dependencies": {
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "express-useragent": "^1.0.15",
     "nanoid": "^3.0.0",
     "valid-url": "^1.0.9"
   },
