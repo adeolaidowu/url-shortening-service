@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post('/encode', encode)
 
-router.get('/decode/:urlId', decode)
+router.get('/decode', decode)
 
 router.get('/statistic/:url_path', getStatistic)
 

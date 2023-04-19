@@ -11,7 +11,7 @@ const encode = (req, res) => {
     const baseUrl = process.env.BASE_URL;
     const urlId = nanoid();
 
-    if (validUrl.isUri(origUrl)) {
+    if (validUrl.isWebUri(origUrl)) {
         try {
             // check that url doesn't already exist in db
             let existingUrl = dataStore[urlId];
@@ -46,7 +46,10 @@ const encode = (req, res) => {
 
 const decode = (req, res) => {
     try {
-        const url = dataStore[req.params.urlId];
+        const { shortUrl } = req.body
+        const startIndex = 22
+        const urlId = shortUrl.substr(startIndex) // extracts id from short url
+        const url = dataStore[urlId];
         if (url) {
             url.numberOfVisits += 1;
             return res.status(200).json({
